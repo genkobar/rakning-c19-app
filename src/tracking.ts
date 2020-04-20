@@ -142,3 +142,24 @@ export function getPoints() {
     );
   });
 }
+
+export function clearOldLocations() {
+  return new Promise((resolve, reject) => {
+    BackgroundGeolocation.getLocations(
+      locations => {
+        const timeCutoff = Date.now() - LOCATION_AGE_LIMIT;
+        const filtered = locations.filter(
+          location => location.time < timeCutoff, // older than 14 days
+        );
+
+        // Delete old location records (make inaccessible via API)
+        filtered.forEach( location => {
+          BackgroundGeolocation.deleteLocation(location.id, () => {}, error => reject(error))
+        })
+
+        resolve();
+      },
+      error => reject(error),
+    );
+  });
+}
